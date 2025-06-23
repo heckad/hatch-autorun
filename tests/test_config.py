@@ -76,3 +76,28 @@ class TestTemplate:
 
         with pytest.raises(TypeError, match='Option `template` for build hook `autorun` must be a string'):
             _ = build_hook.config_template
+
+
+@pytest.mark.usefixtures('mock_project_name')
+class TestPthFileName:
+    def test_default(self, new_project):
+        config = {}
+        build_dir = new_project / 'dist'
+        build_hook = AutoRunBuildHook(str(new_project), config, None, None, str(build_dir), 'wheel')
+
+        assert build_hook.config_pth_file_name == build_hook.config_pth_file_name == 'hatch_autorun_bar.pth'
+
+    def test_correct(self, new_project):
+        config = {'pth-file-name': 'foo'}
+        build_dir = new_project / 'dist'
+        build_hook = AutoRunBuildHook(str(new_project), config, None, None, str(build_dir), 'wheel')
+
+        assert build_hook.config_pth_file_name == build_hook.config_pth_file_name == 'foo.pth'
+
+    def test_not_string(self, new_project):
+        config = {'pth-file-name': 9000}
+        build_dir = new_project / 'dist'
+        build_hook = AutoRunBuildHook(str(new_project), config, None, None, str(build_dir), 'wheel')
+
+        with pytest.raises(TypeError, match='Option `pth-file-name` for build hook `autorun` must be a string'):
+            _ = build_hook.config_pth_file_name

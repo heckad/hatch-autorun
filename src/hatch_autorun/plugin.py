@@ -18,6 +18,7 @@ class AutoRunBuildHook(BuildHookInterface):
         self.__config_file = None
         self.__config_code = None
         self.__config_template = None
+        self.__config_pth_file_name = None
         self.__temp_dir = None
 
     @property
@@ -54,6 +55,17 @@ class AutoRunBuildHook(BuildHookInterface):
         return self.__config_template
 
     @property
+    def config_pth_file_name(self) -> str:
+        if self.__config_pth_file_name is None:
+            pth_file_name = self.config.get('pth-file-name', f'hatch_{self.PLUGIN_NAME}_{self._get_project_name()}')
+            if not isinstance(pth_file_name, str):
+                raise TypeError(f'Option `pth-file-name` for build hook `{self.PLUGIN_NAME}` must be a string')
+
+            self.__config_pth_file_name = f'{pth_file_name}.pth'
+
+        return self.__config_pth_file_name
+
+    @property
     def temp_dir(self):
         if self.__temp_dir is None:
             self.__temp_dir = os.path.realpath(tempfile.mkdtemp())
@@ -73,8 +85,7 @@ class AutoRunBuildHook(BuildHookInterface):
         else:
             code = self.config_code
 
-        project_name = self.build_config.builder.metadata.core.name.replace('-', '_')
-        file_name = f'hatch_{self.PLUGIN_NAME}_{project_name}.pth'
+        file_name = self.config_pth_file_name
         pth_file = os.path.join(self.temp_dir, file_name)
         with open(pth_file, 'w', encoding='utf-8') as f:
             f.write(self.config_template.format(code=code))
@@ -91,3 +102,6 @@ class AutoRunBuildHook(BuildHookInterface):
             shutil.rmtree(self.temp_dir)
         except Exception:
             pass
+
+    def _get_project_name(self) -> str:
+        return self.build_config.builder.metadata.core.name.replace('-', '_')

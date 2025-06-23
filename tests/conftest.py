@@ -71,3 +71,13 @@ path = "my_app/__init__.py"
         yield project_dir
     finally:
         os.chdir(origin)
+
+
+@pytest.fixture
+def mock_project_name() -> Generator[None, None, None]:
+    from unittest.mock import patch
+
+    from hatch_autorun.plugin import AutoRunBuildHook
+
+    with patch.object(AutoRunBuildHook, '_get_project_name', return_value='bar'):
+        yield None
