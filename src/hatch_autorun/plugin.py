@@ -72,7 +72,9 @@ class AutoRunBuildHook(BuildHookInterface):
 
         return self.__temp_dir
 
-    def initialize(self, version, build_data):
+    def initialize(self, version: str, build_data):
+        if os.environ.get('NO_INCLUDE_PTH_FILE', 'false').lower() in ('1', 'true', 'yes'):
+            return
         if self.target_name != 'wheel':
             return
         elif not (self.config_file or self.config_code):
